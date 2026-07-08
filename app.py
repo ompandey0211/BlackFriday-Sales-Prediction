@@ -1,14 +1,75 @@
-
 import streamlit as st
 import pandas as pd
 import joblib
+from pathlib import Path
 
-# Load model
-model = joblib.load("model/model.pkl")
+# Page configuration
+st.set_page_config(
+    page_title="Black Friday Sales Prediction",
+    page_icon="🛍️",
+    layout="wide"
+)
 
-st.title("Black Friday Sales Prediction")
+# Locate the model file
+BASE_DIR = Path(__file__).resolve().parent
+MODEL_PATH = BASE_DIR / "model.pkl"
 
-st.write("Enter customer details to predict purchase amount")
+# Load the model
+model = joblib.load(MODEL_PATH)
+
+st.markdown("""
+<style>
+
+.stApp{
+    background: linear-gradient(135deg,#0f172a,#1e293b,#334155);
+    color:white;
+}
+
+h1,h2,h3,label{
+    color:white!important;
+}
+
+div[data-baseweb="select"]{
+    color:black;
+}
+
+div[data-testid="stNumberInput"] input{
+    color:black;
+}
+
+.stButton>button{
+    background:#ff4b4b;
+    color:white;
+    border-radius:12px;
+    height:55px;
+    width:100%;
+    font-size:20px;
+    font-weight:bold;
+    border:none;
+}
+
+.stButton>button:hover{
+    background:#ff7b00;
+    transform:scale(1.03);
+}
+
+.block-container{
+    padding-top:2rem;
+}
+
+.card{
+    background:rgba(255,255,255,0.08);
+    padding:20px;
+    border-radius:20px;
+    box-shadow:0px 0px 25px rgba(255,255,255,0.15);
+}
+
+</style>
+""", unsafe_allow_html=True)
+
+st.title("🛍️ Black Friday Sales Prediction")
+
+st.write("Enter customer details to predict purchase amount.")
 
 # Inputs
 gender = st.selectbox("Gender", ["M", "F"])
@@ -47,11 +108,34 @@ product_category_3 = st.number_input(
 
 if st.button("Predict Purchase"):
 
+    gender_map = {
+        "F": 0,
+        "M": 1
+    }
+
+    age_map = {
+        "0-17": 0,
+        "18-25": 1,
+        "26-35": 2,
+        "36-45": 3,
+        "46-50": 4,
+        "51-55": 5,
+        "55+": 6
+    }
+
+    stay_map = {
+        "0": 0,
+        "1": 1,
+        "2": 2,
+        "3": 3,
+        "4+": 4
+    }
+
     input_data = pd.DataFrame({
-        "Gender": [gender],
-        "Age": [age],
+        "Gender": [gender_map[gender]],
+        "Age": [age_map[age]],
         "Occupation": [occupation],
-        "Stay_In_Current_City_Years": [stay_years],
+        "Stay_In_Current_City_Years": [stay_map[stay_years]],
         "Marital_Status": [marital_status],
         "Product_Category_1": [product_category_1],
         "Product_Category_2": [product_category_2],
@@ -59,6 +143,8 @@ if st.button("Predict Purchase"):
         "City_Category_B": [1 if city_category == "B" else 0],
         "City_Category_C": [1 if city_category == "C" else 0]
     })
+
+   
 
     prediction = model.predict(input_data)
 
